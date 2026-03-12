@@ -33,7 +33,7 @@ const Footer = () => {
           ))}
         </div>
         <div className="border-t mt-8 pt-6 text-center text-xs text-muted-foreground">
-          © 2026 marketplace. All rights reserved.
+          © 2026 brzOglas. All rights reserved.
         </div>
       </div>
     </footer>

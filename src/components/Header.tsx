@@ -11,7 +11,7 @@ const Header = () => {
       <div className="container flex h-16 items-center gap-4">
         {/* Logo */}
         <h1 className="font-display text-2xl font-bold tracking-tight text-foreground shrink-0">
-          market<span className="text-sell">place</span>
+          brz<span className="text-sell">Oglas</span>
         </h1>
 
         {/* Location */}
