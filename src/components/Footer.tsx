@@ -11,7 +11,7 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
             <h3 className="font-display text-xl font-bold mb-4">
-              market<span className="text-sell">place</span>
+              brz<span className="text-sell">Oglas</span>
             </h3>
             <p className="text-sm text-muted-foreground">
               Buy and sell anything, from cars to phones.
