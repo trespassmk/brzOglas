@@ -2,22 +2,29 @@ import { Search, Plus, Heart, MessageCircle, Bell, User, ChevronDown, MapPin } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
+import UserMenu from "@/components/UserMenu";
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-50 border-b bg-surface/80 backdrop-blur-md">
       <div className="container flex h-16 items-center gap-4">
         {/* Logo */}
-        <h1 className="font-display text-2xl font-bold tracking-tight text-foreground shrink-0">
-          brz<span className="text-sell">Oglas</span>
-        </h1>
+        <Link to="/">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-foreground shrink-0">
+            brz<span className="text-sell">Oglas</span>
+          </h1>
+        </Link>
 
         {/* Location */}
         <button className="hidden md:flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0">
           <MapPin className="h-4 w-4" />
-          <span>All Pakistan</span>
+          <span>All Macedonia</span>
           <ChevronDown className="h-3 w-3" />
         </button>
 
@@ -34,16 +41,29 @@ const Header = () => {
 
         {/* Actions */}
         <div className="hidden md:flex items-center gap-1">
-          <Button variant="ghost" size="icon"><Heart className="h-5 w-5" /></Button>
-          <Button variant="ghost" size="icon"><MessageCircle className="h-5 w-5" /></Button>
-          <Button variant="ghost" size="icon"><Bell className="h-5 w-5" /></Button>
-          <Button variant="ghost" size="sm" className="gap-1.5 ml-1">
-            <User className="h-4 w-4" />
-            Login
-          </Button>
+          {!loading && user ? (
+            <>
+              <Button variant="ghost" size="icon"><Heart className="h-5 w-5" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => navigate("/messages")}>
+                <MessageCircle className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="icon"><Bell className="h-5 w-5" /></Button>
+              <UserMenu />
+            </>
+          ) : (
+            <Button variant="ghost" size="sm" className="gap-1.5 ml-1" onClick={() => navigate("/login")}>
+              <User className="h-4 w-4" />
+              Login
+            </Button>
+          )}
         </div>
 
-        <Button variant="sell" size="sm" className="gap-1.5 shrink-0">
+        <Button
+          variant="sell"
+          size="sm"
+          className="gap-1.5 shrink-0"
+          onClick={() => user ? navigate("/create-listing") : navigate("/login")}
+        >
           <Plus className="h-4 w-4" />
           <span className="hidden sm:inline">Sell</span>
         </Button>
