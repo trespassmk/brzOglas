@@ -1,28 +1,52 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Search, ArrowUpDown } from "lucide-react";
 import Header from "@/components/Header";
 import CategoryBar from "@/components/CategoryBar";
 import ListingCard from "@/components/ListingCard";
+import ListingFilters from "@/components/ListingFilters";
+import ListingSkeleton from "@/components/ListingSkeleton";
 import Footer from "@/components/Footer";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useListings, type ListingFilters as Filters } from "@/hooks/useListings";
+import { timeAgo } from "@/lib/date-utils";
 
-import car1 from "@/assets/car1.jpg";
-import phone1 from "@/assets/phone1.jpg";
-import property1 from "@/assets/property1.jpg";
-import sofa1 from "@/assets/sofa1.jpg";
-import laptop1 from "@/assets/laptop1.jpg";
-import bike1 from "@/assets/bike1.jpg";
-import car2 from "@/assets/car2.jpg";
-
-const listings = [
-  { title: "Honda Civic 2022 - Excellent Condition", price: "Rs 45,00,000", location: "Lahore", date: "Today", image: car1, featured: true },
-  { title: "iPhone 15 Pro Max 256GB", price: "Rs 3,20,000", location: "Karachi", date: "Today", image: phone1, featured: true },
-  { title: "3 Bed Apartment - DHA Phase 5", price: "Rs 2,50,00,000", location: "Islamabad", date: "Yesterday", image: property1 },
-  { title: "L-Shaped Sofa Set - Almost New", price: "Rs 85,000", location: "Rawalpindi", date: "Yesterday", image: sofa1 },
-  { title: "MacBook Pro M2 14-inch", price: "Rs 4,50,000", location: "Karachi", date: "2 days ago", image: laptop1, featured: true },
-  { title: "Honda CBR 250R Sports Bike", price: "Rs 6,50,000", location: "Lahore", date: "2 days ago", image: bike1 },
-  { title: "Toyota Corolla 2020 - Low Mileage", price: "Rs 38,00,000", location: "Faisalabad", date: "3 days ago", image: car2 },
-  { title: "iPhone 15 Pro Max 256GB - PTA", price: "Rs 2,90,000", location: "Multan", date: "3 days ago", image: phone1 },
+const SORT_OPTIONS = [
+  { value: "newest", label: "Newest" },
+  { value: "price_asc", label: "Price: Low → High" },
+  { value: "price_desc", label: "Price: High → Low" },
 ];
 
 const Index = () => {
+  const [filters, setFilters] = useState<Filters>({ sort: "newest" });
+  const [searchInput, setSearchInput] = useState("");
+
+  // Debounced search
+  useEffect(() => {
+    const t = setTimeout(() => setFilters((f) => ({ ...f, search: searchInput || undefined })), 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useListings(filters);
+
+  // Infinite scroll
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const observerCb = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) fetchNextPage();
+    },
+    [hasNextPage, isFetchingNextPage, fetchNextPage]
+  );
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(observerCb, { rootMargin: "200px" });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [observerCb]);
+
+  const allListings = data?.pages.flatMap((p) => p.items) ?? [];
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -30,11 +54,76 @@ const Index = () => {
 
       <main className="flex-1">
         <div className="container py-6">
-          <h2 className="font-display text-xl font-bold mb-4">Fresh Recommendations</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-            {listings.map((listing, i) => (
-              <ListingCard key={i} {...listing} />
-            ))}
+          {/* Search + Sort bar */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search listings..."
+                className="pl-10 h-11"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+              />
+            </div>
+            <Select value={filters.sort || "newest"} onValueChange={(v) => setFilters((f) => ({ ...f, sort: v as any }))}>
+              <SelectTrigger className="w-full sm:w-[200px] h-11">
+                <ArrowUpDown className="h-4 w-4 mr-2 text-muted-foreground" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SORT_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex gap-6">
+            <ListingFilters filters={filters} onChange={setFilters} />
+
+            <div className="flex-1 min-w-0">
+              <h2 className="font-display text-xl font-bold mb-4">
+                {filters.search ? `Results for "${filters.search}"` : "Fresh Recommendations"}
+              </h2>
+
+              {isLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                  {Array.from({ length: 8 }).map((_, i) => <ListingSkeleton key={i} />)}
+                </div>
+              ) : allListings.length === 0 ? (
+                <div className="text-center py-16">
+                  <p className="text-muted-foreground">No listings found. Try adjusting your filters.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                  {allListings.map((listing) => {
+                    const images = (listing.listing_images as any[])
+                      ?.sort((a: any, b: any) => a.sort_order - b.sort_order)
+                      .map((img: any) => img.image_url) ?? [];
+                    return (
+                      <ListingCard
+                        key={listing.id}
+                        id={listing.id}
+                        title={listing.title}
+                        price={`${listing.price?.toLocaleString() ?? "0"} ден`}
+                        location={listing.city || "Unknown"}
+                        date={timeAgo(listing.created_at)}
+                        images={images}
+                        featured={listing.is_featured}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Infinite scroll sentinel */}
+              <div ref={sentinelRef} className="h-1" />
+              {isFetchingNextPage && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mt-4">
+                  {Array.from({ length: 4 }).map((_, i) => <ListingSkeleton key={i} />)}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>

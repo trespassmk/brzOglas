@@ -7,9 +7,9 @@ import { toast } from "@/hooks/use-toast";
 import type { ListingFormData } from "@/pages/CreateListing";
 
 const CITIES = [
-  "Lahore", "Karachi", "Islamabad", "Rawalpindi", "Faisalabad",
-  "Multan", "Peshawar", "Quetta", "Sialkot", "Gujranwala",
-  "Hyderabad", "Bahawalpur", "Sargodha", "Abbottabad", "Mardan",
+  "Skopje", "Kumanovo", "Bitola", "Ohrid", "Prilep",
+  "Tetovo", "Veles", "Štip", "Strumica", "Gostivar",
+  "Kavadarci", "Kočani", "Kičevo", "Struga", "Gevgelija",
 ];
 
 interface Props {
