@@ -1,5 +1,4 @@
 import { MapPin, Pencil, ImageIcon, Tag, FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import type { ListingFormData } from "@/pages/CreateListing";
 
 interface Props {
@@ -39,14 +38,13 @@ const StepReview = ({ form, onEdit }: Props) => {
     <div className="space-y-3">
       <p className="text-sm font-semibold text-muted-foreground mb-2">Review your listing</p>
 
-      {/* Preview card */}
       {form.images.length > 0 && (
         <div className="rounded-lg overflow-hidden border bg-card">
           <div className="aspect-[4/3] bg-muted">
             <img src={form.images[0].preview} alt="" className="h-full w-full object-cover" />
           </div>
           <div className="p-3">
-            <p className="font-display text-lg font-bold">Rs {form.price || "0"}</p>
+            <p className="font-display text-lg font-bold">{form.price ? `${Number(form.price.replace(/,/g, "")).toLocaleString()} ден` : "0 ден"}</p>
             <p className="text-sm text-foreground/80 mt-1 line-clamp-1">{form.title}</p>
             <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
               <MapPin className="h-3 w-3" />
@@ -58,7 +56,7 @@ const StepReview = ({ form, onEdit }: Props) => {
 
       <Section title="Basic Info" step={0} onEdit={onEdit} icon={Tag}>
         <p className="text-sm font-medium line-clamp-1">{form.title}</p>
-        <p className="text-sm text-muted-foreground">Rs {form.price} · {form.categoryLabel || "No category"}</p>
+        <p className="text-sm text-muted-foreground">{form.price ? `${Number(form.price.replace(/,/g, "")).toLocaleString()} ден` : "0 ден"} · {form.categoryLabel || "No category"}</p>
       </Section>
 
       <Section title="Location" step={1} onEdit={onEdit} icon={MapPin}>
@@ -70,7 +68,7 @@ const StepReview = ({ form, onEdit }: Props) => {
       </Section>
 
       <Section title="Details" step={3} onEdit={onEdit} icon={FileText}>
-        <p className="text-sm font-medium capitalize">{form.condition} · {form.negotiable ? "Negotiable" : "Fixed price"}</p>
+        <p className="text-sm font-medium capitalize">{form.condition}</p>
         {form.description && (
           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{form.description}</p>
         )}

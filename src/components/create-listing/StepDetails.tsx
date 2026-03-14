@@ -1,6 +1,5 @@
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { ListingFormData } from "@/pages/CreateListing";
 
@@ -20,7 +19,7 @@ const StepDetails = ({ form, updateForm }: Props) => {
     <div className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="desc" className="text-sm font-semibold">
-          Description <span className="text-muted-foreground font-normal">(optional)</span>
+          Description <span className="text-destructive">*</span>
         </Label>
         <Textarea
           id="desc"
@@ -33,7 +32,9 @@ const StepDetails = ({ form, updateForm }: Props) => {
       </div>
 
       <div className="space-y-3">
-        <Label className="text-sm font-semibold">Condition</Label>
+        <Label className="text-sm font-semibold">
+          Condition <span className="text-destructive">*</span>
+        </Label>
         <RadioGroup
           value={form.condition}
           onValueChange={(v) => updateForm({ condition: v })}
@@ -53,17 +54,6 @@ const StepDetails = ({ form, updateForm }: Props) => {
             </label>
           ))}
         </RadioGroup>
-      </div>
-
-      <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
-        <div>
-          <p className="text-sm font-semibold">Price Negotiable</p>
-          <p className="text-xs text-muted-foreground">Buyers can make offers</p>
-        </div>
-        <Switch
-          checked={form.negotiable}
-          onCheckedChange={(v) => updateForm({ negotiable: v })}
-        />
       </div>
     </div>
   );

@@ -24,7 +24,6 @@ export interface ListingFormData {
   images: { file: File; preview: string }[];
   description: string;
   condition: string;
-  negotiable: boolean;
 }
 
 const STEPS = ["Basic Info", "Location", "Images", "Details", "Review"];
@@ -47,7 +46,6 @@ const CreateListing = () => {
     images: [],
     description: "",
     condition: "used",
-    negotiable: false,
   });
 
   const updateForm = (updates: Partial<ListingFormData>) =>
@@ -56,6 +54,7 @@ const CreateListing = () => {
   const canProceed = () => {
     if (step === 0) return form.title.trim().length > 0 && form.price.trim().length > 0 && form.categoryId;
     if (step === 1) return form.city.trim().length > 0;
+    if (step === 3) return form.description.trim().length > 0 && form.condition;
     return true;
   };
 
@@ -66,7 +65,6 @@ const CreateListing = () => {
     if (!user) return;
     setPublishing(true);
     try {
-      // Check quota
       const { data: userData } = await supabase
         .from("users")
         .select("free_listings_used")
@@ -86,7 +84,6 @@ const CreateListing = () => {
         return;
       }
 
-      // Create listing
       const { data: listing, error: listingError } = await supabase
         .from("listings")
         .insert({
@@ -98,7 +95,7 @@ const CreateListing = () => {
           coordinates: form.coordinates as any,
           description: form.description.trim() || null,
           condition: form.condition,
-          currency: "PKR",
+          currency: "MKD",
           status: "active",
         })
         .select("id")
@@ -106,7 +103,6 @@ const CreateListing = () => {
 
       if (listingError) throw listingError;
 
-      // Upload images
       for (let i = 0; i < form.images.length; i++) {
         const img = form.images[i];
         const ext = img.file.name.split(".").pop() || "jpg";
@@ -130,7 +126,6 @@ const CreateListing = () => {
         });
       }
 
-      // Increment quota
       await supabase
         .from("users")
         .update({ free_listings_used: used + 1 })
@@ -152,7 +147,6 @@ const CreateListing = () => {
       <Header />
 
       <div className="flex-1 container max-w-2xl py-6">
-        {/* Progress */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
             <h2 className="font-display text-xl font-bold">Post Your Ad</h2>
@@ -176,7 +170,6 @@ const CreateListing = () => {
           </div>
         </div>
 
-        {/* Step content */}
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
@@ -193,7 +186,6 @@ const CreateListing = () => {
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation */}
         <div className="sticky bottom-0 bg-background/90 backdrop-blur-sm border-t mt-6 -mx-4 px-4 py-4 flex gap-3">
           {step > 0 && (
             <Button variant="outline" onClick={prev} className="gap-1.5 min-h-[44px]">

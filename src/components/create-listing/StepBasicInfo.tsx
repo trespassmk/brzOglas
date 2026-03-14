@@ -30,21 +30,21 @@ const StepBasicInfo = ({ form, updateForm }: Props) => {
         <Input
           id="title"
           placeholder="What are you selling?"
-          maxLength={60}
+          maxLength={80}
           value={form.title}
           onChange={(e) => updateForm({ title: e.target.value })}
           className="text-lg h-12"
         />
-        <p className="text-xs text-muted-foreground text-right">{form.title.length}/60</p>
+        <p className="text-xs text-muted-foreground text-right">{form.title.length}/80</p>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="price" className="text-sm font-semibold">
-          Price (PKR) <span className="text-destructive">*</span>
+          Price (MKD) <span className="text-destructive">*</span>
         </Label>
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium text-sm">
-            Rs
+            ден
           </span>
           <Input
             id="price"
@@ -56,7 +56,7 @@ const StepBasicInfo = ({ form, updateForm }: Props) => {
               const v = e.target.value.replace(/[^0-9,]/g, "");
               updateForm({ price: v });
             }}
-            className="pl-10 text-lg h-12 font-display font-bold"
+            className="pl-12 text-lg h-12 font-display font-bold"
           />
         </div>
       </div>
