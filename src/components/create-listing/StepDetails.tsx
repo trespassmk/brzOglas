@@ -11,7 +11,6 @@ interface Props {
 const CONDITIONS = [
   { value: "new", label: "New" },
   { value: "used", label: "Used" },
-  { value: "excellent", label: "Excellent" },
 ];
 
 const StepDetails = ({ form, updateForm }: Props) => {
