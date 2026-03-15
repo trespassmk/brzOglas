@@ -79,7 +79,7 @@ const Index = () => {
           </div>
 
           <div>
-            <div className="flex-1 min-w-0">
+            <div>
               <h2 className="font-display text-xl font-bold mb-4">
                 {filters.search ? `Results for "${filters.search}"` : "Fresh Recommendations"}
               </h2>
