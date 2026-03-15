@@ -45,8 +45,11 @@ const ListingDetail = () => {
   useEffect(() => {
     if (!id || viewIncremented.current) return;
     viewIncremented.current = true;
-    const timer = setTimeout(() => {
-      supabase.rpc("increment_view_count" as any, { listing_id: id } as any).then(() => {});
+    const timer = setTimeout(async () => {
+      await supabase
+        .from("listings")
+        .update({ views_count: (listing?.views_count ?? 0) + 1 } as any)
+        .eq("id", id);
     }, 2000);
     return () => clearTimeout(timer);
   }, [id]);
