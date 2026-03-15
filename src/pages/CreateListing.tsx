@@ -84,13 +84,24 @@ const CreateListing = () => {
         return;
       }
 
+      // Look up category UUID by slug
+      let categoryUuid: string | null = null;
+      if (form.categoryId) {
+        const { data: catData } = await supabase
+          .from("categories")
+          .select("id")
+          .eq("slug", form.categoryId)
+          .single();
+        categoryUuid = catData?.id ?? null;
+      }
+
       const { data: listing, error: listingError } = await supabase
         .from("listings")
         .insert({
           user_id: user.id,
           title: form.title.trim(),
           price: parseFloat(form.price.replace(/,/g, "")) || 0,
-          category_id: form.categoryId || null,
+          category_id: categoryUuid,
           city: form.city,
           coordinates: form.coordinates as any,
           description: form.description.trim() || null,

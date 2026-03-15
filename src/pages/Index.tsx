@@ -78,9 +78,7 @@ const Index = () => {
             </Select>
           </div>
 
-          <div className="flex gap-6">
-            <ListingFilters filters={filters} onChange={setFilters} />
-
+          <div>
             <div className="flex-1 min-w-0">
               <h2 className="font-display text-xl font-bold mb-4">
                 {filters.search ? `Results for "${filters.search}"` : "Fresh Recommendations"}
