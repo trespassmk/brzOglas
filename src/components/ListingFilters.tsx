@@ -100,7 +100,7 @@ const FilterBody = ({ filters, onChange, onClose }: Props & { onClose?: () => vo
             <SelectValue placeholder="All cities" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All cities</SelectItem>
+            <SelectItem value="all">All cities</SelectItem>
             {CITIES.map((c) => (
               <SelectItem key={c} value={c}>{c}</SelectItem>
             ))}
