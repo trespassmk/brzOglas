@@ -43,7 +43,15 @@ export function useListings(filters: ListingFilters) {
 
       // Filters
       if (filters.search) query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
-      if (filters.category) query = query.eq("category_id", filters.category);
+      if (filters.category) {
+        // Look up category UUID by slug first
+        const { data: catData } = await supabase
+          .from("categories")
+          .select("id")
+          .eq("slug", filters.category)
+          .single();
+        if (catData) query = query.eq("category_id", catData.id);
+      }
       if (filters.city) query = query.eq("city", filters.city);
       if (filters.condition) query = query.eq("condition", filters.condition);
       if (filters.priceMin != null) query = query.gte("price", filters.priceMin);

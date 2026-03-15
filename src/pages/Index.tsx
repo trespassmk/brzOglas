@@ -3,7 +3,7 @@ import { Search, ArrowUpDown } from "lucide-react";
 import Header from "@/components/Header";
 import CategoryBar from "@/components/CategoryBar";
 import ListingCard from "@/components/ListingCard";
-import ListingFilters from "@/components/ListingFilters";
+
 import ListingSkeleton from "@/components/ListingSkeleton";
 import Footer from "@/components/Footer";
 import { Input } from "@/components/ui/input";
@@ -78,16 +78,14 @@ const Index = () => {
             </Select>
           </div>
 
-          <div className="flex gap-6">
-            <ListingFilters filters={filters} onChange={setFilters} />
-
-            <div className="flex-1 min-w-0">
+          <div>
+            <div>
               <h2 className="font-display text-xl font-bold mb-4">
                 {filters.search ? `Results for "${filters.search}"` : "Fresh Recommendations"}
               </h2>
 
               {isLoading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
                   {Array.from({ length: 8 }).map((_, i) => <ListingSkeleton key={i} />)}
                 </div>
               ) : allListings.length === 0 ? (
@@ -95,7 +93,7 @@ const Index = () => {
                   <p className="text-muted-foreground">No listings found. Try adjusting your filters.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
                   {allListings.map((listing) => {
                     const images = (listing.listing_images as any[])
                       ?.sort((a: any, b: any) => a.sort_order - b.sort_order)
@@ -119,7 +117,7 @@ const Index = () => {
               {/* Infinite scroll sentinel */}
               <div ref={sentinelRef} className="h-1" />
               {isFetchingNextPage && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 mt-4">
                   {Array.from({ length: 4 }).map((_, i) => <ListingSkeleton key={i} />)}
                 </div>
               )}
