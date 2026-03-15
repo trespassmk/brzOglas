@@ -46,7 +46,7 @@ const ListingDetail = () => {
     if (!id || viewIncremented.current) return;
     viewIncremented.current = true;
     const timer = setTimeout(() => {
-      supabase.rpc("increment_view_count" as any, { listing_id: id }).then(() => {});
+      supabase.rpc("increment_view_count" as any, { listing_id: id } as any).then(() => {});
     }, 2000);
     return () => clearTimeout(timer);
   }, [id]);
