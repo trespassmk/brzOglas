@@ -3,7 +3,7 @@ import { Search, ArrowUpDown } from "lucide-react";
 import Header from "@/components/Header";
 import CategoryBar from "@/components/CategoryBar";
 import ListingCard from "@/components/ListingCard";
-import ListingFilters from "@/components/ListingFilters";
+
 import ListingSkeleton from "@/components/ListingSkeleton";
 import Footer from "@/components/Footer";
 import { Input } from "@/components/ui/input";
