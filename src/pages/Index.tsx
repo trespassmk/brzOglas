@@ -117,7 +117,7 @@ const Index = () => {
               {/* Infinite scroll sentinel */}
               <div ref={sentinelRef} className="h-1" />
               {isFetchingNextPage && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 mt-4">
                   {Array.from({ length: 4 }).map((_, i) => <ListingSkeleton key={i} />)}
                 </div>
               )}
