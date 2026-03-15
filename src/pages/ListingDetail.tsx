@@ -1,19 +1,27 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MapPin, MessageCircle, Heart, ChevronLeft, ChevronRight, Share2, Shield } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, MapPin, MessageCircle, Heart } from "lucide-react";
 import { timeAgo } from "@/lib/date-utils";
+
+import ImageGallery from "@/components/listing-detail/ImageGallery";
+import SellerCard from "@/components/listing-detail/SellerCard";
+import SafetyTips from "@/components/listing-detail/SafetyTips";
+import ReportModal from "@/components/listing-detail/ReportModal";
+import ShareButtons from "@/components/listing-detail/ShareButtons";
+import RelatedListings from "@/components/listing-detail/RelatedListings";
 
 const ListingDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [imgIdx, setImgIdx] = useState(0);
   const [liked, setLiked] = useState(false);
+  const viewIncremented = useRef(false);
 
   const { data: listing, isLoading } = useQuery({
     queryKey: ["listing", id],
@@ -33,12 +41,25 @@ const ListingDetail = () => {
     enabled: !!id,
   });
 
+  // Increment view count (debounced, once per visit)
+  useEffect(() => {
+    if (!id || !listing || viewIncremented.current) return;
+    viewIncremented.current = true;
+    const timer = setTimeout(async () => {
+      await (supabase as any)
+        .from("listings")
+        .update({ views_count: (listing.views_count ?? 0) + 1 })
+        .eq("id", id);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [id, listing]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Header />
-        <div className="container max-w-4xl py-6 space-y-4">
-          <Skeleton className="aspect-[16/9] w-full rounded-lg" />
+        <div className="container max-w-5xl py-6 space-y-4">
+          <Skeleton className="aspect-[4/3] w-full rounded-lg" />
           <Skeleton className="h-8 w-2/3" />
           <Skeleton className="h-6 w-1/3" />
         </div>
@@ -67,59 +88,18 @@ const ListingDetail = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
 
-      <div className="container max-w-4xl py-4">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4">
+      <div className="container max-w-5xl py-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
+        >
           <ArrowLeft className="h-4 w-4" /> Back
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left: Images + Details */}
           <div className="lg:col-span-2 space-y-4">
-            {/* Image gallery */}
-            {images.length > 0 ? (
-              <div className="relative rounded-lg overflow-hidden bg-muted aspect-[4/3]">
-                <img src={images[imgIdx]} alt={listing.title} className="h-full w-full object-cover" />
-                {images.length > 1 && (
-                  <>
-                    <button
-                      onClick={() => setImgIdx((i) => (i > 0 ? i - 1 : images.length - 1))}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-surface/80 backdrop-blur-sm flex items-center justify-center hover:bg-surface"
-                    >
-                      <ChevronLeft className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => setImgIdx((i) => (i < images.length - 1 ? i + 1 : 0))}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-surface/80 backdrop-blur-sm flex items-center justify-center hover:bg-surface"
-                    >
-                      <ChevronRight className="h-5 w-5" />
-                    </button>
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                      {images.map((_: string, i: number) => (
-                        <button key={i} onClick={() => setImgIdx(i)} className={`h-2 w-2 rounded-full transition-colors ${i === imgIdx ? "bg-sell" : "bg-surface/60"}`} />
-                      ))}
-                    </div>
-                  </>
-                )}
-                {/* Thumbnails */}
-                {images.length > 1 && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/40 to-transparent p-2 flex gap-1.5 justify-center">
-                    {images.map((url: string, i: number) => (
-                      <button
-                        key={i}
-                        onClick={() => setImgIdx(i)}
-                        className={`h-12 w-12 rounded border-2 overflow-hidden shrink-0 ${i === imgIdx ? "border-sell" : "border-transparent opacity-70"}`}
-                      >
-                        <img src={url} alt="" className="h-full w-full object-cover" />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="rounded-lg bg-muted aspect-[4/3] flex items-center justify-center text-muted-foreground">
-                No images
-              </div>
-            )}
+            <ImageGallery images={images} title={listing.title} />
 
             {/* Details */}
             <div className="rounded-lg border bg-card p-4 space-y-4">
@@ -132,22 +112,26 @@ const ListingDetail = () => {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => setLiked(!liked)} className="h-10 w-10 rounded-full border flex items-center justify-center hover:bg-muted transition-colors">
+                  <button
+                    onClick={() => setLiked(!liked)}
+                    className="h-10 w-10 rounded-full border flex items-center justify-center hover:bg-muted transition-colors"
+                  >
                     <Heart className={`h-5 w-5 ${liked ? "fill-destructive text-destructive" : "text-muted-foreground"}`} />
                   </button>
-                  <button className="h-10 w-10 rounded-full border flex items-center justify-center hover:bg-muted transition-colors">
-                    <Share2 className="h-5 w-5 text-muted-foreground" />
-                  </button>
+                  <ShareButtons title={listing.title} listingId={listing.id} />
                 </div>
               </div>
 
               <p className="font-display text-3xl font-bold text-foreground">
-                {listing.price?.toLocaleString() ?? "0"} <span className="text-lg font-medium text-muted-foreground">ден</span>
+                {listing.price?.toLocaleString() ?? "0"}{" "}
+                <span className="text-lg font-medium text-muted-foreground">ден</span>
               </p>
 
               {listing.condition && (
                 <div className="flex gap-2">
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-muted text-muted-foreground font-medium capitalize">{listing.condition}</span>
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-muted text-muted-foreground font-medium capitalize">
+                    {listing.condition}
+                  </span>
                 </div>
               )}
 
@@ -157,45 +141,45 @@ const ListingDetail = () => {
                   <p className="text-sm text-foreground/80 whitespace-pre-wrap">{listing.description}</p>
                 </div>
               )}
+
+              <div className="pt-3 border-t">
+                <ReportModal listingId={listing.id} />
+              </div>
             </div>
           </div>
 
-          {/* Right: Seller card + CTA */}
+          {/* Right sidebar */}
           <div className="space-y-4">
-            <div className="rounded-lg border bg-card p-4 space-y-4 sticky top-20">
-              <p className="font-display text-2xl font-bold">
-                {listing.price?.toLocaleString() ?? "0"} <span className="text-sm font-medium text-muted-foreground">ден</span>
-              </p>
-
-              <Button variant="sell" className="w-full gap-2 min-h-[48px]">
-                <MessageCircle className="h-5 w-5" /> Chat with Seller
-              </Button>
-
-              {/* Seller info */}
-              {seller && (
-                <div className="flex items-center gap-3 pt-4 border-t">
-                  <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center text-lg font-bold text-muted-foreground overflow-hidden">
-                    {seller.profile_image ? (
-                      <img src={seller.profile_image} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      seller.username?.charAt(0).toUpperCase()
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm flex items-center gap-1">
-                      {seller.username}
-                      {seller.verified_badge && <Shield className="h-3.5 w-3.5 text-sell" />}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Member since {new Date(seller.created_at).getFullYear()}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
+            {seller && (
+              <SellerCard seller={seller} price={listing.price} viewsCount={listing.views_count} />
+            )}
+            <SafetyTips />
           </div>
         </div>
+
+        {/* Related listings */}
+        <RelatedListings
+          listingId={listing.id}
+          categoryId={listing.category_id}
+          city={listing.city}
+        />
       </div>
+
+      {/* Mobile sticky CTA */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface/95 backdrop-blur-sm border-t p-3 z-40">
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <p className="font-display text-lg font-bold">
+              {listing.price?.toLocaleString() ?? "0"} <span className="text-sm text-muted-foreground">ден</span>
+            </p>
+          </div>
+          <Button variant="sell" className="gap-2 min-h-[48px] px-6">
+            <MessageCircle className="h-5 w-5" /> Chat
+          </Button>
+        </div>
+      </div>
+
+      <div className="lg:hidden h-20" /> {/* Spacer for sticky CTA */}
 
       <Footer />
     </div>
