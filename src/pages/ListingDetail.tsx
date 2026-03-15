@@ -43,16 +43,16 @@ const ListingDetail = () => {
 
   // Increment view count (debounced, once per visit)
   useEffect(() => {
-    if (!id || viewIncremented.current) return;
+    if (!id || !listing || viewIncremented.current) return;
     viewIncremented.current = true;
     const timer = setTimeout(async () => {
-      await supabase
+      await (supabase as any)
         .from("listings")
-        .update({ views_count: (listing?.views_count ?? 0) + 1 } as any)
+        .update({ views_count: (listing.views_count ?? 0) + 1 })
         .eq("id", id);
     }, 2000);
     return () => clearTimeout(timer);
-  }, [id]);
+  }, [id, listing]);
 
   if (isLoading) {
     return (
