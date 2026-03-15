@@ -95,7 +95,7 @@ const FilterBody = ({ filters, onChange, onClose }: Props & { onClose?: () => vo
       {/* City */}
       <div className="space-y-2">
         <Label className="text-sm font-semibold">City</Label>
-        <Select value={filters.city || ""} onValueChange={(v) => onChange({ ...filters, city: v || undefined })}>
+        <Select value={filters.city || "all"} onValueChange={(v) => onChange({ ...filters, city: v === "all" ? undefined : v })}>
           <SelectTrigger className="min-h-[44px]">
             <SelectValue placeholder="All cities" />
           </SelectTrigger>
